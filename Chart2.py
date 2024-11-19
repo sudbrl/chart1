@@ -42,6 +42,3 @@ if uploaded_file:
 
     st.subheader("Branch Loan Change Analysis")
     st.pyplot(fig_branch)
-
-    # Display the data table
-    st.dataframe(combined_branches)
