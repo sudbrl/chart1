@@ -26,6 +26,12 @@ if uploaded_file:
         if not required_branch_cols.issubset(branch_df.columns):
             st.error(f"Branch sheet must contain columns: {required_branch_cols}")
         else:
+            # Convert 'Percent Change' column to numeric, forcing errors to NaN
+            branch_df['Percent Change'] = pd.to_numeric(branch_df['Percent Change'], errors='coerce')
+
+            # Drop rows where 'Percent Change' is NaN (optional, depending on your requirements)
+            branch_df = branch_df.dropna(subset=['Percent Change'])
+
             # Set 'index' as the index in the DataFrame, and use 'Percent Change' for sorting
             branch_df.set_index('index', inplace=True)
             top_5_increasing = branch_df.nlargest(5, 'Percent Change')
