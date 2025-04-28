@@ -37,16 +37,17 @@ if uploaded_file:
             combined_branches = pd.concat([top_5_increasing, top_5_declining])
             combined_branches['Change (Crore)'] = combined_branches['Change'] / 1e7
 
-            # Plot the bar chart
+            # Plot the bar chart for Branch data
             fig_branch, ax_branch = plt.subplots(figsize=(12, 8))
             colors_branch = ['green' if x > 0 else 'red' for x in combined_branches['Change']]
-            bars_branch = ax_branch.bar(combined_branches['BranchName'], combined_branches['Change'],
+            bars_branch = ax_branch.bar(combined_branches['BranchName'].values, 
+                                        combined_branches['Change'].values,
                                         color=colors_branch, edgecolor='black', alpha=0.7)
             ax_branch.set_title('Top 5 Increasing and Declining Branches (in Crores)', fontsize=16)
             ax_branch.set_xlabel('Branch Name', fontsize=14)
             ax_branch.set_ylabel('Loan Change (Currency)', fontsize=14)
             ax_branch.set_xticks(range(len(combined_branches['BranchName'])))
-            ax_branch.set_xticklabels(combined_branches['BranchName'], rotation=45, ha='right')
+            ax_branch.set_xticklabels(combined_branches['BranchName'].values, rotation=45, ha='right')
             for bar, change_crore in zip(bars_branch, combined_branches['Change (Crore)']):
                 yval = bar.get_height()
                 ax_branch.text(bar.get_x() + bar.get_width() / 2, yval, f'Rs.{abs(change_crore):.2f} Cr',
@@ -76,7 +77,9 @@ if uploaded_file:
             ]
 
             fig_compare, ax_compare = plt.subplots(figsize=(12, 8))
-            ax_compare.barh(df_compare_sorted['index'], df_compare_sorted['Change_Crore_NRs'], color=colors_compare)
+            ax_compare.barh(df_compare_sorted['index'].values, 
+                            df_compare_sorted['Change_Crore_NRs'].values,
+                            color=colors_compare)
             ax_compare.set_xlabel('Change in Balance (Crore NRs)')
             ax_compare.set_ylabel('Loan Type')
             ax_compare.set_title('Change in Loan Balances Across Loan Types (in Crore NRs)')
