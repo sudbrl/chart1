@@ -21,44 +21,36 @@ if uploaded_file:
         branch_sheet = 'Branch'
         branch_df = pd.read_excel(file_bytes, sheet_name=branch_sheet)
 
-        # Change the required columns to 'index' and 'Percent Change'
-        required_branch_cols = {'index', 'Percent Change'}
+        required_branch_cols = {'BranchName', 'Change'}
         if not required_branch_cols.issubset(branch_df.columns):
             st.error(f"Branch sheet must contain columns: {required_branch_cols}")
         else:
-            # Convert 'Percent Change' column to numeric, forcing errors to NaN
-            branch_df['Percent Change'] = pd.to_numeric(branch_df['Percent Change'], errors='coerce')
-
-            # Drop rows where 'Percent Change' is NaN (optional, depending on your requirements)
-            branch_df = branch_df.dropna(subset=['Percent Change'])
-
-            # Set 'index' as the index in the DataFrame, and use 'Percent Change' for sorting
-            branch_df.set_index('index', inplace=True)
-            top_5_increasing = branch_df.nlargest(5, 'Percent Change')
-            top_5_declining = branch_df.nsmallest(5, 'Percent Change')
+            # Sort data for top 5 increasing and declining branches
+            top_5_increasing = branch_df.nlargest(5, 'Change')
+            top_5_declining = branch_df.nsmallest(5, 'Change')
 
             # Combine the top increasing and declining branches
             combined_branches = pd.concat([
-                top_5_increasing[['Percent Change']],
-                top_5_declining[['Percent Change']]
+                top_5_increasing[['BranchName', 'Change']],
+                top_5_declining[['BranchName', 'Change']]
             ])
-            combined_branches['Change (Percent)'] = combined_branches['Percent Change']
+            combined_branches['Change (Crore)'] = combined_branches['Change'] / 1e7
 
             # Plot the bar chart for Branch data
             fig_branch, ax_branch = plt.subplots(figsize=(12, 8))
-            colors_branch = ['green' if x > 0 else 'red' for x in combined_branches['Percent Change']]
-            bars_branch = ax_branch.bar(combined_branches.index, combined_branches['Percent Change'],
+            colors_branch = ['green' if x > 0 else 'red' for x in combined_branches['Change']]
+            bars_branch = ax_branch.bar(combined_branches['BranchName'], combined_branches['Change'],
                                         color=colors_branch, edgecolor='black', alpha=0.7)
-            ax_branch.set_title('Top 5 Increasing and Declining Branches (in Percent)', fontsize=16)
+            ax_branch.set_title('Top 5 Increasing and Declining Branches (in Crores)', fontsize=16)
             ax_branch.set_xlabel('Branch Name', fontsize=14)
-            ax_branch.set_ylabel('Percent Change', fontsize=14)
-            ax_branch.set_xticks(range(len(combined_branches.index)))
-            ax_branch.set_xticklabels(combined_branches.index, rotation=45, ha='right')
-            for bar, change_percent in zip(bars_branch, combined_branches['Change (Percent)']):
+            ax_branch.set_ylabel('Loan Change (in currency)', fontsize=14)
+            ax_branch.set_xticks(range(len(combined_branches['BranchName'])))
+            ax_branch.set_xticklabels(combined_branches['BranchName'], rotation=45, ha='right')
+            for bar, change_crore in zip(bars_branch, combined_branches['Change (Crore)']):
                 yval = bar.get_height()
-                ax_branch.text(bar.get_x() + bar.get_width() / 2, yval, f'{change_percent:.2f}%',
+                ax_branch.text(bar.get_x() + bar.get_width() / 2, yval, f'Rs.{abs(change_crore):.2f} Cr',
                                ha='center', va='bottom', fontsize=10)
-            st.subheader("Branch Loan Change Analysis (Percent Change)")
+            st.subheader("Branch Loan Change Analysis")
             st.pyplot(fig_branch)
 
         # Move back to start of BytesIO
