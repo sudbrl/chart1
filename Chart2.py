@@ -21,13 +21,13 @@ if uploaded_file:
         branch_sheet = 'Branch'
         branch_df = pd.read_excel(file_bytes, sheet_name=branch_sheet)
 
-        # Change the required columns to BranchName and Percent Change
-        required_branch_cols = {'BranchName', 'Percent Change'}
+        # Change the required columns to 'index' and 'Percent Change'
+        required_branch_cols = {'index', 'Percent Change'}
         if not required_branch_cols.issubset(branch_df.columns):
             st.error(f"Branch sheet must contain columns: {required_branch_cols}")
         else:
-            # Set BranchName as index and calculate the top 5 increasing and declining branches by Percent Change
-            branch_df.set_index('BranchName', inplace=True)
+            # Set 'index' as the index in the DataFrame, and use 'Percent Change' for sorting
+            branch_df.set_index('index', inplace=True)
             top_5_increasing = branch_df.nlargest(5, 'Percent Change')
             top_5_declining = branch_df.nsmallest(5, 'Percent Change')
 
